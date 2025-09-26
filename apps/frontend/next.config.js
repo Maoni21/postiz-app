@@ -54,7 +54,7 @@ const nextConfig = {
     ];
   },
   async rewrites() {
-    return [
+    const rewrites = [
       {
         source: '/uploads/:path*',
         destination:
@@ -63,6 +63,15 @@ const nextConfig = {
             : '/404',
       },
     ];
+
+    if (process.env.NODE_ENV === 'development' && process.env.API_TARGET) {
+      rewrites.unshift({
+        source: '/api/:path*',
+        destination: `${process.env.API_TARGET}/api/:path*`,
+      });
+    }
+
+    return rewrites;
   },
 };
 
