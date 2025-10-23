@@ -42,6 +42,7 @@ model Organization {
   sets              Sets[]
   thirdParty        ThirdParty[]
   errors            Errors[]
+  setterConfigs     SetterConfig[]
 }
 
 model Tags {
@@ -289,155 +290,154 @@ model Subscription {
   deletedAt        DateTime?
 
   @@index([organizationId])
-  @@index([deletedAt])
-}
-
-model Customer {
-  id           String        @id @default(uuid())
-  name         String
-  orgId        String
-  organization Organization  @relation(fields: [orgId], references: [id])
-  integrations Integration[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  deletedAt    DateTime?
-
-  @@unique([orgId, name, deletedAt])
+  @@index([subscriptionTier])
 }
 
 model Integration {
-  id                    String                 @id @default(cuid())
-  internalId            String
-  organizationId        String
-  name                  String
-  organization          Organization           @relation(fields: [organizationId], references: [id])
-  picture               String?
-  providerIdentifier    String
-  type                  String
-  token                 String
-  disabled              Boolean                @default(false)
-  tokenExpiration       DateTime?
-  refreshToken          String?
-  posts                 Post[]
-  profile               String?
-  deletedAt             DateTime?
-  createdAt             DateTime               @default(now())
-  updatedAt             DateTime?              @updatedAt
-  orderItems            OrderItems[]
-  inBetweenSteps        Boolean                @default(false)
-  refreshNeeded         Boolean                @default(false)
-  postingTimes          String                 @default("[{\"time\":120}, {\"time\":400}, {\"time\":700}]")
-  customInstanceDetails String?
-  customerId            String?
-  customer              Customer?              @relation(fields: [customerId], references: [id])
-  plugs                 Plugs[]
-  exisingPlugData       ExisingPlugData[]
-  rootInternalId        String?
-  additionalSettings    String?                @default("[]")
-  webhooks              IntegrationsWebhooks[]
+  id                String                 @id @default(uuid())
+  name              String?
+  picture           String?
+  type              String
+  providerIdentifier String?
+  token             String?
+  refreshToken      String?
+  expiresIn         Int?
+  username          String?
+  isBetweenSteps    Boolean                @default(false)
+  disabled          Boolean                @default(false)
+  inBetweenSteps    Json?
+  organizationId    String
+  organization      Organization           @relation(fields: [organizationId], references: [id])
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+  posts             Post[]
+  customUrl         String?
+  time              String?
+  profile           String?
+  deletedAt         DateTime?
+  integrationId     String?
+  additionalSettings Json?
+  comments          Comments[]
+  notifications     Notifications[]
+  customer          Customer[]
+  plugs             Plugs[]
+  orderItems        OrderItems[]
+  exisingPlugData   ExisingPlugData[]
+  signatures        Signatures[]
+  webhooks          IntegrationsWebhooks[]
 
-  @@unique([organizationId, internalId])
-  @@index([rootInternalId])
   @@index([organizationId])
-  @@index([providerIdentifier])
-  @@index([updatedAt])
-  @@index([createdAt])
-  @@index([deletedAt])
-  @@index([customerId])
-  @@index([inBetweenSteps])
-  @@index([refreshNeeded])
   @@index([disabled])
+  @@index([deletedAt])
+  @@index([integrationId])
+}
+
+model Customer {
+  id             String       @id @default(uuid())
+  integrationId  String
+  integration    Integration  @relation(fields: [integrationId], references: [id])
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  customerId     String
+  customerName   String?
+  avatar         String?
+  description    String?
+  lastUpdate     DateTime     @default(now())
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([customerId, integrationId])
+  @@index([integrationId])
+  @@index([organizationId])
+  @@index([customerId])
+  @@index([lastUpdate])
 }
 
 model Signatures {
   id             String       @id @default(uuid())
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])
-  content        String
-  autoAdd        Boolean
+  integrationId  String
+  integration    Integration  @relation(fields: [integrationId], references: [id])
+  signature      String       @db.Text
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
-  deletedAt      DateTime?
 
-  @@index([createdAt])
+  @@unique([integrationId])
   @@index([organizationId])
+}
+
+model Post {
+  id                String          @id @default(uuid())
+  organizationId    String
+  organization      Organization    @relation("organization", fields: [organizationId], references: [id])
+  submittedForOrder String?
+  submittedForOrg   Organization?   @relation("submittedForOrg", fields: [submittedForOrder], references: [id])
+  title             String?
+  description       String?
+  integrationId     String
+  integration       Integration     @relation(fields: [integrationId], references: [id])
+  postedAt          DateTime?
+  group             String?
+  state             State           @default(DRAFT)
+  publishDate       DateTime?       @db.Timestamptz(3)
+  settings          Json?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  deletedAt         DateTime?
+  threadId          String?
+  thread            Post?           @relation("PostThread", fields: [threadId], references: [id])
+  threadPosts       Post[]          @relation("PostThread")
+  approvedSubmit    APPROVED_SUBMIT_FOR_ORDER @default(NO)
+  tags              TagsPosts[]
+  order             Orders?         @relation(fields: [orderId], references: [id])
+  orderId           String?
+  messages          Messages?       @relation(fields: [messageId], references: [id])
+  messageId         String?
+  payoutProblems    PayoutProblems[]
+  errors            Errors[]
+
+  @@index([integrationId])
+  @@index([organizationId])
+  @@index([group])
+  @@index([publishDate])
+  @@index([state])
+  @@index([createdAt])
   @@index([deletedAt])
+  @@index([submittedForOrder])
+  @@index([messageId])
 }
 
 model Comments {
   id             String       @id @default(uuid())
-  content        String
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id])
-  postId         String
-  post           Post         @relation(fields: [postId], references: [id])
+  postId         String?
   userId         String
   user           User         @relation(fields: [userId], references: [id])
+  comment        String
+  customerId     String?
+  integrationId  String
+  integration    Integration  @relation(fields: [integrationId], references: [id])
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  repliedId      String?
+  replied        Comments?    @relation("CommentReplies", fields: [repliedId], references: [id])
+  replies        Comments[]   @relation("CommentReplies")
+  deletedAt      DateTime?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
-  deletedAt      DateTime?
 
-  @@index([createdAt])
+  @@index([integrationId])
   @@index([organizationId])
   @@index([userId])
-  @@index([postId])
-  @@index([deletedAt])
-}
-
-model Post {
-  id                         String                    @id @default(cuid())
-  state                      State                     @default(QUEUE)
-  publishDate                DateTime
-  organizationId             String
-  integrationId              String
-  content                    String
-  group                      String
-  organization               Organization              @relation("organization", fields: [organizationId], references: [id])
-  integration                Integration               @relation(fields: [integrationId], references: [id])
-  title                      String?
-  description                String?
-  parentPostId               String?
-  releaseId                  String?
-  releaseURL                 String?
-  settings                   String?
-  parentPost                 Post?                     @relation("parentPostId", fields: [parentPostId], references: [id])
-  childrenPost               Post[]                    @relation("parentPostId")
-  image                      String?
-  submittedForOrderId        String?
-  submittedForOrder          Orders?                   @relation(fields: [submittedForOrderId], references: [id])
-  submittedForOrganizationId String?
-  submittedForOrganization   Organization?             @relation("submittedForOrg", fields: [submittedForOrganizationId], references: [id])
-  approvedSubmitForOrder     APPROVED_SUBMIT_FOR_ORDER @default(NO)
-  lastMessageId              String?
-  lastMessage                Messages?                 @relation(fields: [lastMessageId], references: [id])
-  intervalInDays             Int?
-  payoutProblems             PayoutProblems[]
-  comments                   Comments[]
-  tags                       TagsPosts[]
-  errors                     Errors[]
-  error                      String?
-  createdAt                  DateTime                  @default(now())
-  updatedAt                  DateTime                  @updatedAt
-  deletedAt                  DateTime?
-
-  @@index([group])
-  @@index([deletedAt])
-  @@index([publishDate])
-  @@index([state])
-  @@index([organizationId])
-  @@index([parentPostId])
-  @@index([submittedForOrderId])
-  @@index([intervalInDays])
-  @@index([approvedSubmitForOrder])
-  @@index([lastMessageId])
+  @@index([repliedId])
   @@index([createdAt])
-  @@index([updatedAt])
-  @@index([releaseURL])
-  @@index([integrationId])
+  @@index([deletedAt])
 }
 
 model Notifications {
   id             String       @id @default(uuid())
+  integrationId  String
+  integration    Integration  @relation(fields: [integrationId], references: [id])
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])
   content        String
@@ -674,6 +674,69 @@ model Mentions {
 
   @@id([name, username, platform, image])
   @@index([createdAt])
+}
+
+// ====================================
+// CETERIA AI SETTER MODULE
+// ====================================
+
+model SetterConfig {
+  id                    String         @id @default(uuid())
+  organizationId        String         @map("organization_id")
+  organization          Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name                  String
+  persona               String         @db.Text
+  systemPrompt          String         @map("system_prompt") @db.Text
+  qualificationCriteria Json           @map("qualification_criteria")
+  calendarType          String?        @map("calendar_type")
+  calendarCredentials   String?        @map("calendar_credentials") @db.Text
+  isActive              Boolean        @default(true) @map("is_active")
+  createdAt             DateTime       @default(now()) @map("created_at")
+  updatedAt             DateTime       @updatedAt @map("updated_at")
+  
+  conversations         Conversation[]
+  
+  @@map("setter_configs")
+  @@index([organizationId])
+  @@index([isActive])
+}
+
+model Conversation {
+  id               String         @id @default(uuid())
+  setterConfigId   String         @map("setter_config_id")
+  setterConfig     SetterConfig   @relation(fields: [setterConfigId], references: [id], onDelete: Cascade)
+  platform         String
+  prospectId       String         @map("prospect_id")
+  prospectUsername String?        @map("prospect_username")
+  status           String         @default("active")
+  messages         Json           @default("[]")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+  
+  extractedLeads   ExtractedLead[]
+  
+  @@map("conversations")
+  @@index([setterConfigId])
+  @@index([status])
+  @@index([platform])
+  @@index([prospectId])
+}
+
+model ExtractedLead {
+  id                  String       @id @default(uuid())
+  conversationId      String       @map("conversation_id")
+  conversation        Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  extractedData       Json         @map("extracted_data")
+  qualificationScore  Int?         @map("qualification_score")
+  nextAction          String?      @map("next_action")
+  bookedAt            DateTime?    @map("booked_at")
+  meetingLink         String?      @map("meeting_link") @db.Text
+  createdAt           DateTime     @default(now()) @map("created_at")
+  
+  @@map("extracted_leads")
+  @@index([conversationId])
+  @@index([qualificationScore])
+  @@index([nextAction])
 }
 
 enum OrderStatus {

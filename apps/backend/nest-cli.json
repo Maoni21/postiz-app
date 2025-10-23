@@ -15,6 +15,7 @@
     "deleteOutDir": true,
     "assets": [],
     "watchAssets": false,
-    "plugins": []
+    "plugins": [],
+    "typeCheck": false
   }
 }

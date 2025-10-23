@@ -13,6 +13,9 @@ import { ThirdPartyModule } from '@gitroom/nestjs-libraries/3rdparties/thirdpart
 import { VideoModule } from '@gitroom/nestjs-libraries/videos/video.module';
 import { SentryModule } from "@sentry/nestjs/setup";
 import { FILTER } from '@gitroom/nestjs-libraries/sentry/sentry.exception';
+import { SetterAiModule } from '@gitroom/nestjs-libraries/database/prisma/setter-ai';
+import { MessengerWebhookModule } from '@gitroom/nestjs-libraries/integrations/messenger';
+import { SetterAiWorkerModule } from '@gitroom/nestjs-libraries/workers/setter-ai';
 
 @Global()
 @Module({
@@ -24,6 +27,9 @@ import { FILTER } from '@gitroom/nestjs-libraries/sentry/sentry.exception';
     PublicApiModule,
     AgentModule,
     McpModule,
+    SetterAiModule,
+    MessengerWebhookModule,
+    SetterAiWorkerModule,
     ThirdPartyModule,
     VideoModule,
     ThrottlerModule.forRoot([

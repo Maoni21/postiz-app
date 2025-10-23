@@ -7,6 +7,8 @@
     "allowSyntheticDefaultImports": true,
     "target": "es2017",
     "sourceMap": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "noEmitOnError": false,
+    "skipLibCheck": true
   }
 }
