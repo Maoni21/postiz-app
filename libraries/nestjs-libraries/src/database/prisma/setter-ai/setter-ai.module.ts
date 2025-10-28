@@ -1,11 +1,18 @@
 import { Module } from '@nestjs/common';
-import { SetterAiService } from './setter-ai.service';
 import { SetterAiController } from './setter-ai.controller';
-import { PrismaService } from '../prisma.service';
+import { SetterAiService } from './setter-ai.service';
+import { BullModule } from '@nestjs/bullmq';
+import { SetterAiTestController } from './setter-ai-test.controller';
+
 
 @Module({
-  controllers: [SetterAiController],
-  providers: [PrismaService, SetterAiService],
-  exports: [SetterAiService],
+  imports: [
+    BullModule.registerQueue({
+      name: 'setter-ai',
+    }),
+  ],
+  controllers: [SetterAiController , SetterAiTestController],
+  providers: [SetterAiService],
+  exports: [SetterAiService, BullModule], // ← AJOUTÉ BullModule ici
 })
 export class SetterAiModule {}

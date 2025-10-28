@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "dotenv -e ../../.env -- ts-node --transpile-only -r tsconfig-paths/register src/main.ts",
     "build": "cross-env NODE_ENV=production nest build",
+    "worker": "dotenv -e ../../.env -- ts-node --transpile-only -r tsconfig-paths/register src/worker.ts",
     "start": "dotenv -e ../../.env -- node ./dist/apps/backend/src/main.js",
     "pm2": "pm2 start pnpm --name backend -- start"
   },

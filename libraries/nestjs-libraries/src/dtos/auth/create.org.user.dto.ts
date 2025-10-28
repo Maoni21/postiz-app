@@ -7,6 +7,7 @@ import {
   ValidateIf,
 } from 'class-validator';
 import { Provider } from '@prisma/client';
+import { Transform } from 'class-transformer';
 
 export class CreateOrgUserDto {
   @IsString()
@@ -18,6 +19,7 @@ export class CreateOrgUserDto {
 
   @IsString()
   @IsDefined()
+  @Transform(({ value }) => value?.toUpperCase())
   provider: Provider;
 
   @IsString()

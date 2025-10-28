@@ -18,13 +18,11 @@ export class AuthService {
   }
 
   static fixedEncryption(value: string) {
-    // encryption algorithm
     const algorithm = 'aes-256-cbc';
+    const key = crypto.scryptSync(process.env.JWT_SECRET!, 'salt', 32);
+    const iv = Buffer.alloc(16, 0);
 
-    // create a cipher object
-    const cipher = crypto.createCipher(algorithm, process.env.JWT_SECRET);
-
-    // encrypt the plain text
+    const cipher = crypto.createCipheriv(algorithm, key, iv);
     let encrypted = cipher.update(value, 'utf8', 'hex');
     encrypted += cipher.final('hex');
 
@@ -33,9 +31,10 @@ export class AuthService {
 
   static fixedDecryption(hash: string) {
     const algorithm = 'aes-256-cbc';
-    const decipher = crypto.createDecipher(algorithm, process.env.JWT_SECRET);
+    const key = crypto.scryptSync(process.env.JWT_SECRET!, 'salt', 32);
+    const iv = Buffer.alloc(16, 0);
 
-    // decrypt the encrypted text
+    const decipher = crypto.createDecipheriv(algorithm, key, iv);
     let decrypted = decipher.update(hash, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
 

@@ -36,6 +36,11 @@ import { McpController } from '@gitroom/backend/api/routes/mcp.controller';
 import { SetsController } from '@gitroom/backend/api/routes/sets.controller';
 import { ThirdPartyController } from '@gitroom/backend/api/routes/third-party.controller';
 import { MonitorController } from '@gitroom/backend/api/routes/monitor.controller';
+import { SetterAiController } from '@gitroom/nestjs-libraries/database/prisma/setter-ai/setter-ai.controller';
+import { SetterAiModule } from '@gitroom/nestjs-libraries/database/prisma/setter-ai';
+import { SetterAiTestController } from '@gitroom/nestjs-libraries/database/prisma/setter-ai/setter-ai-test.controller';
+import { MetaWebhookModule } from '@gitroom/nestjs-libraries/webhooks/meta/meta-webhook.module';
+
 
 const authenticatedController = [
   UsersController,
@@ -55,15 +60,18 @@ const authenticatedController = [
   AutopostController,
   SetsController,
   ThirdPartyController,
+  SetterAiController,
 ];
+
 @Module({
-  imports: [UploadModule],
+  imports: [UploadModule, SetterAiModule, MetaWebhookModule], // ← AJOUTÉ SetterAiModule ICI
   controllers: [
     RootController,
     StripeController,
     AuthController,
     PublicController,
     McpController,
+    SetterAiTestController,
     MonitorController,
     ...authenticatedController,
   ],

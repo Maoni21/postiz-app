@@ -1,9 +1,7 @@
 import { Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
-import { ConversationProcessor } from './conversation.processor';
-import { ClaudeApiService } from './claude-api.service';
+import { SetterAiWorker } from './setter-ai.worker';
 import { PrismaService } from '../../database/prisma/prisma.service';
-import { MessengerWebhookModule } from '../../integrations/messenger/messenger-webhook.module';
 
 @Module({
   imports: [
@@ -15,15 +13,12 @@ import { MessengerWebhookModule } from '../../integrations/messenger/messenger-w
       },
     }),
     BullModule.registerQueue({
-      name: 'setter-ai-conversations',
+      name: 'setter-ai',
     }),
-    MessengerWebhookModule,
   ],
   providers: [
-    ConversationProcessor,
-    ClaudeApiService,
+    SetterAiWorker,
     PrismaService,
   ],
-  exports: [ClaudeApiService],
 })
 export class SetterAiWorkerModule {}
